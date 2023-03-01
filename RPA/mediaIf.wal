@@ -1,0 +1,11 @@
+�defVar --name notaAluno --type String
+defVar --name notaDoAluno --type Numeric
+inputBox --title "${notaDoAluno}" --prompt Nota notaAluno=value
+convertStringToNumber --culture "pt-BR" --text "${notaAluno}        " notaDoAluno=value
+if --left "${notaAluno}" --operator "Greater_Than" --right 6
+	logMessage --message "Você passou" --type "Info"
+elseIf --left "${notaAluno}" --operator "Equal_To" --right 6
+	logMessage --message "Você quase não passou" --type "Info"
+else
+	logMessage --message "Você não passou" --type "Info"
+endIf*23.0.1.0

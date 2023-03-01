@@ -1,0 +1,13 @@
+�defVar --name Date --type DateTime
+defVar --name textLog --type String --value "Inicio da execução"
+defVar --name count --type Numeric
+getCurrentDateAndTime --localorutc "LocalTime" Date=value
+logMessage --message "${Date} - ${textLog}" --type "Info"
+goSub --label logExecution --assignments "{\"${textLog}\":\"Inicio da execução\"}"
+for --variable ${count} --from 1 --to 5 --step 1
+	logMessage --message "Passo ${count}" --type "Info"
+next
+goSub --label logExecution --assignments "{\"${textLog}\":\"Fim da execução\"}"
+beginSub --name logExecution
+
+endSub*23.0.1.0
