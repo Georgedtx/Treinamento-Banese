@@ -1,0 +1,40 @@
+�defVar --name connection --type DbConnection
+defVar --name excelPath --type String
+defVar --name excelEmployees --type Excel
+defVar --name employeesTable --type DataTable
+defVar --name counter --type Numeric
+defVar --name employeesID --type Numeric
+defVar --name employeeName --type String
+defVar --name daysOff --type Numeric
+defVar --name resultSheet --type Numeric --value 1
+defVar --name daysOffTable --type DataTable
+defVar --name daysAbsence --type Numeric
+defVar --name result --type Numeric
+defVar --name dataTime --type DateTime
+defVar --name dateNow --type Date
+defVar --name dataNow --type DateTime
+sqlServerConnect --connectionstring "Data Source=UNITBES14\\SQLEXPRESS;Initial Catalog=rpa;User ID=sa;Password=L@b3s01;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False" connection=connection
+getSpecialFolder --folder "Desktop" excelPath=value
+excelOpen --file "C:\\Users\\4058631\\Desktop\\BaneseCurso\\Database\\listaFolga.xlsx" --savechanges  excelEmployees=value
+goSub --label calculationDaysOff
+excelClose --file ${excelEmployees} --save 
+logMessage --message "Término de operação" --type "Info"
+beginSub --name calculationDaysOff
+sqlExecuteReader --connection ${connection} --statement "SELECT employeesID, name, daysOff, daysAbsence FROM tbEmployees WHERE status = \'ACTIVE\' and extendedVacation=0;" daysOffTable=value
+for --variable ${counter} --from 1 --to ${daysOffTable.Rows} --step 1
+	mapTableRow --dataTable ${daysOffTable} --row ${counter} --mappings "[{\"Name\":\"employeesID\",\"Number\":null,\"Output\":\"${employeesID}\"},{\"Name\":\"name\",\"Number\":null,\"Output\":\"${employeeName}\"},{\"Name\":\"daysOff\",\"Number\":null,\"Output\":\"${daysOff}\"},{\"Name\":\"daysAbsence\",\"Number\":null,\"Output\":\"${daysAbsence}\"}]"
+	evaluate --expression "${daysOff} - ${daysAbsence}" result=value
+	if --left "${result}" --operator "Less_Than_Equal_To" --right 5
+		if --left "${result}" --operator "Equal_To" --right 0 --negate 
+			evaluate --expression "${resultSheet}+1" resultSheet=value
+			excelSet --value "${employeesID}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "a${resultSheet}"
+			excelSet --value "${employeeName}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "b${resultSheet}"
+			excelSet --value "${daysOff}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "c${resultSheet}"
+			excelSet --value "${daysAbsence}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "d${resultSheet}"
+			excelSet --value "${result}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+			getCurrentDateAndTime --localorutc "LocalTime" dataNow=value
+			excelSet --value "${dataNow}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "f${resultSheet}"
+		endIf
+	endIf
+next
+endSub*23.0.1.0
