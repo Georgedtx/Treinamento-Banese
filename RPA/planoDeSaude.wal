@@ -1,0 +1,79 @@
+�2defVar --name connection --type DbConnection
+defVar --name excelPath --type String
+defVar --name excelEmployees --type Excel
+defVar --name employeesTable --type DataTable
+defVar --name counter --type Numeric
+defVar --name employeesID --type Numeric
+defVar --name employeeName --type String
+defVar --name daysOff --type Numeric
+defVar --name resultSheet --type Numeric --value 1
+defVar --name daysOffTable --type DataTable
+defVar --name daysAbsence --type Numeric
+defVar --name result --type Numeric
+defVar --name dateNow --type DateTime
+defVar --name dateProcessNow --type Date
+defVar --name dateProcess --type DateTime
+defVar --name mesAniv --type Numeric
+defVar --name dateBirth --type String
+defVar --name dependents --type String
+defVar --name age --type Numeric
+defVar --name valorPlano --type Numeric
+defVar --name totalPagar --type Numeric
+defVar --name pessoas600 --type Numeric
+defVar --name valorComDep --type Numeric
+defVar --name userEmail --type String
+defVar --name passwordEmail --type SecureString
+defVar --name rpaMail --type EmailConnection
+defVar --name emailToSend --type List --innertype String --value "[george.dantas2240@gmail.com]"
+defVar --name arquivoAnexo --type List --innertype String
+sqlServerConnect --connectionstring "Data Source=UNITBES14\\SQLEXPRESS;Initial Catalog=rpa;User ID=sa;Password=L@b3s01;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False" connection=connection
+getSpecialFolder --folder "Desktop" excelPath=value
+excelOpen --file "${excelPath}/BaneseCurso/DATABASE/planoDeSaude.xlsx" --savechanges  excelEmployees=value
+goSub --label calculationDaysOff
+excelClose --file ${excelEmployees} --save 
+getVaultItem --name chaveExemplo userEmail=userName passwordEmail=password
+smtpConnect --smtphost "mail.influirerp.com.br" --smtpport 25 --authenticationtype "BasicAuthentication" --smtpusername "${userEmail}" --smtppassword "${passwordEmail}" rpaMail=value
+emailSend --connection ${rpaMail} --to ${emailToSend} --from "${userEmail}" --subject "Relação de funcionários com plano de saúde - reajuste" --bodytype "Text" --body "Segue planilha com a relação de funcionários que optaram pelo plano de saúde e seus respectivos valores." --attachments ${arquivoAnexo}
+setVar --name "${arquivoAnexo}" --value "[${excelPath}/BaneseCurso/DATABASE/planoDeSaude.xlsx]"
+logMessage --message "Término de operação" --type "Info"
+beginSub --name calculationDaysOff
+sqlExecuteReader --connection ${connection} --statement "SELECT employeesID, name, daysOff, mesAniv, dateBirth, dependents, age FROM tbEmployees WHERE status = \'ACTIVE\';" daysOffTable=value
+for --variable ${counter} --from 1 --to ${daysOffTable.Rows} --step 1
+	mapTableRow --dataTable ${daysOffTable} --row ${counter} --mappings "[{\"Name\":\"employeesID\",\"Number\":null,\"Output\":\"${employeesID}\"},{\"Name\":\"name\",\"Number\":null,\"Output\":\"${employeeName}\"},{\"Name\":\"daysOff\",\"Number\":null,\"Output\":\"${daysOff}\"},{\"Name\":\"mesAniv\",\"Number\":null,\"Output\":\"${mesAniv}\"},{\"Name\":\"dateBirth\",\"Number\":null,\"Output\":\"${dateBirth}\"},{\"Name\":\"dependents\",\"Number\":null,\"Output\":\"${dependents}\"},{\"Name\":\"age\",\"Number\":null,\"Output\":\"${age}\"}]"
+	evaluate --expression "${daysOff} - ${daysAbsence}" result=value
+	evaluate --expression "${resultSheet}+1" resultSheet=value
+	excelSet --value "${employeesID}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "a${resultSheet}"
+	excelSet --value "${employeeName}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "b${resultSheet}"
+	excelSet --value "${daysOff}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "c${resultSheet}"
+	excelSet --value "${result}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	getCurrentDateAndTime --localorutc "LocalTime" dateProcess=value
+	excelSet --value "${dateProcess}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "m${resultSheet}"
+	excelSet --value "${dateBirth}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "g${resultSheet}"
+	excelSet --value "${mesAniv}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "h${resultSheet}"
+	excelSet --value "${dependents}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "i${resultSheet}"
+	excelSet --value "${age}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "f${resultSheet}"
+	if --left "${age}" --operator "Less_Than_Equal_To" --right 18
+		evaluate --expression "${totalPagar} +180 + (90 * ${dependents} )" totalPagar=value
+		excelSet --value 180 --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "j${resultSheet}"
+		evaluate --expression "180 + 90 * ${dependents} " valorComDep=value
+		excelSet --value "${valorComDep}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "k${resultSheet}"
+	elseIf --left "${age}" --operator "Less_Than" --right 28
+		evaluate --expression "${totalPagar} +220 + (90 * ${dependents} )" totalPagar=value
+		excelSet --value 220 --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "j${resultSheet}"
+		evaluate --expression "220+ 90 * ${dependents} " valorComDep=value
+		excelSet --value "${valorComDep}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "k${resultSheet}"
+	elseIf --left "${age}" --operator "Less_Than_Equal_To" --right 45
+		evaluate --expression "${totalPagar} +380 + (90 * ${dependents} )" totalPagar=value
+		excelSet --value 380 --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "j${resultSheet}"
+		evaluate --expression "380 + 90 * ${dependents} " valorComDep=value
+		excelSet --value "${valorComDep}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "k${resultSheet}"
+	elseIf --left "${age}" --operator "Greater_Than_Equal_To" --right 46
+		evaluate --expression "${totalPagar} +600 + (90 * ${dependents} )" totalPagar=value
+		evaluate --expression "600 + 90 * ${dependents} " valorComDep=value
+		excelSet --value 600 --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "j${resultSheet}"
+		excelSet --value "${valorComDep}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "k${resultSheet}"
+	endIf
+next
+evaluate --expression "${resultSheet} +1" resultSheet=value
+excelSet --value "R$ ${totalPagar}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "k${resultSheet}"
+endSub*23.0.1.0
