@@ -1,0 +1,66 @@
+�(defVar --name connection --type DbConnection
+defVar --name excelPath --type String
+defVar --name excelEmployees --type Excel
+defVar --name employeesTable --type DataTable
+defVar --name counter --type Numeric
+defVar --name employeesID --type Numeric
+defVar --name employeeName --type String
+defVar --name daysOff --type Numeric
+defVar --name resultSheet --type Numeric --value 1
+defVar --name daysOffTable --type DataTable
+defVar --name result --type Numeric
+defVar --name dateProcessNow --type Date
+defVar --name dateProcess --type DateTime
+defVar --name dependents --type String
+defVar --name userEmail --type String
+defVar --name passwordEmail --type SecureString
+defVar --name rpaMail --type EmailConnection
+defVar --name emailToSend --type List --innertype String --value "[george.dantas2240@gmail.com]"
+defVar --name arquivoAnexo --type List --innertype String
+defVar --name salary --type Numeric
+defVar --name valorBloqueio --type Numeric
+sqlServerConnect --connectionstring "Data Source=UNITBES14\\SQLEXPRESS;Initial Catalog=rpa;User ID=sa;Password=L@b3s01;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False" connection=connection
+getSpecialFolder --folder "Desktop" excelPath=value
+excelOpen --file "C:\\Users\\4058631\\Desktop\\BaneseCurso\\Database\\listaOrdemJudicial.xlsx" --savechanges  excelEmployees=value
+goSub --label calculationDaysOff
+excelClose --file ${excelEmployees} --save 
+getVaultItem --name chaveExemplo userEmail=userName passwordEmail=password
+smtpConnect --smtphost "mail.influirerp.com.br" --smtpport 25 --authenticationtype "BasicAuthentication" --smtpusername "${userEmail}" --smtppassword "${passwordEmail}" rpaMail=value
+setVar --name "${arquivoAnexo}" --value "[${excelPath}/BaneseCurso/DATABASE/listaOrdemJudicial.xlsx]"
+emailSend --connection ${rpaMail} --to ${emailToSend} --from "${userEmail}" --subject "Relação de funcionários com desconto no salário" --bodytype "Text" --body "Segue planilha com a relação de funcionários." --attachments ${arquivoAnexo}
+logMessage --message "Término de operação" --type "Info"
+beginSub --name calculationDaysOff
+sqlExecuteReader --connection ${connection} --statement "SELECT employeesID, name, daysOff, mesAniv, dateBirth, dependents, salary, age FROM tbEmployees WHERE status = \'ACTIVE\' ;" daysOffTable=value
+for --variable ${counter} --from 1 --to ${daysOffTable.Rows} --step 1
+	mapTableRow --dataTable ${daysOffTable} --row ${counter} --mappings "[{\"Name\":\"employeesID\",\"Number\":null,\"Output\":\"${employeesID}\"},{\"Name\":\"name\",\"Number\":null,\"Output\":\"${employeeName}\"},{\"Name\":\"dependents\",\"Number\":null,\"Output\":\"${dependents}\"},{\"Name\":\"salary\",\"Number\":null,\"Output\":\"${salary}\"}]"
+	evaluate --expression "${resultSheet}+1" resultSheet=value
+	excelSet --value "${employeesID}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "a${resultSheet}"
+	excelSet --value "${employeeName}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "b${resultSheet}"
+	excelSet --value "${salary}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "c${resultSheet}"
+	excelSet --value "${dependents}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "d${resultSheet}"
+	if --left "${employeesID}" --operator "Equal_To" --right 61
+		evaluate --expression "${salary}*0.15" valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	elseIf --left "${employeesID}" --operator "Equal_To" --right 86
+		evaluate --expression "${salary}*0.15" valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	elseIf --left "${employeesID}" --operator "Equal_To" --right 35
+		evaluate --expression "${salary}*0.20" valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	elseIf --left "${employeesID}" --operator "Equal_To" --right 2
+		evaluate --expression "${salary}*0.20" valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	elseIf --left "${employeesID}" --operator "Equal_To" --right 81
+		evaluate --expression "${salary}*0.20" valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	elseIf --left "${employeesID}" --operator "Equal_To" --right 28
+		evaluate --expression "${salary}*0.25" valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	else
+		evaluate --expression 0 valorBloqueio=value
+		excelSet --value "${valorBloqueio}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	endIf
+	getCurrentDateAndTime --localorutc "LocalTime" dateProcess=value
+	excelSet --value "${dateProcess}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "f${resultSheet}"
+next
+endSub*23.0.1.0

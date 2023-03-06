@@ -33,8 +33,8 @@ goSub --label calculationDaysOff
 excelClose --file ${excelEmployees} --save 
 getVaultItem --name chaveExemplo userEmail=userName passwordEmail=password
 smtpConnect --smtphost "mail.influirerp.com.br" --smtpport 25 --authenticationtype "BasicAuthentication" --smtpusername "${userEmail}" --smtppassword "${passwordEmail}" rpaMail=value
-emailSend --connection ${rpaMail} --to ${emailToSend} --from "${userEmail}" --subject "Relação de funcionários com plano de saúde - reajuste" --bodytype "Text" --body "Segue planilha com a relação de funcionários que optaram pelo plano de saúde e seus respectivos valores." --attachments ${arquivoAnexo}
 setVar --name "${arquivoAnexo}" --value "[${excelPath}/BaneseCurso/DATABASE/planoDeSaude.xlsx]"
+emailSend --connection ${rpaMail} --to ${emailToSend} --from "${userEmail}" --subject "Relação de funcionários com plano de saúde - reajuste" --bodytype "Text" --body "Segue planilha com a relação de funcionários que optaram pelo plano de saúde e seus respectivos valores." --attachments ${arquivoAnexo}
 logMessage --message "Término de operação" --type "Info"
 beginSub --name calculationDaysOff
 sqlExecuteReader --connection ${connection} --statement "SELECT employeesID, name, daysOff, mesAniv, dateBirth, dependents, age FROM tbEmployees WHERE status = \'ACTIVE\';" daysOffTable=value
