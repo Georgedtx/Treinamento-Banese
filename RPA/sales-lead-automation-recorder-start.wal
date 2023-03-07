@@ -1,0 +1,42 @@
+½defVar --name leads --type DataTable
+defVar --name row_count --type Numeric
+defVar --name column_count --type Numeric
+defVar --name row_iterator --type Numeric --value 1
+defVar --name first_name --type String
+defVar --name last_name --type String
+defVar --name job_title --type String
+defVar --name company --type String
+defVar --name email --type String
+defVar --name phone --type String
+defVar --name client_address --type String
+defVar --name client_city --type String
+defVar --name client_zipcode --type String
+defVar --name interest --type String
+defVar --name followup --type String
+defVar --name client_state --type String
+defVar --name close --type Window
+webStart --name web01 --type "Chrome"
+webNavigate --url "http://jk-automation.mybluemix.net"
+// Login
+webSet --value username --selector "CssSelector" --css "body > div:nth-child(4) > form > div:nth-child(1) > input"
+webSet --value password10 --selector "CssSelector" --css "body > div:nth-child(4) > form > div.form-group > input"
+webClick --selector "CssSelector" --css "body > div:nth-child(4) > form > div:nth-child(3) > input"
+// Select leads
+webClick --selector "CssSelector" --css "body > div > div.col-md-2.leftNavColumn > div > a:nth-child(2)"
+// Read CSV file
+readCSV --filepath "C:\\Users\\4058631\\Desktop\\BaneseCurso\\Lab 1\\SalesLeads.csv" --delimiter "," --hasheaders  --missingfieldaction "ParseError" leads=value row_count=rows column_count=columns
+launchWindow --executablepath "C:\\Users\\4058631\\Downloads\\SalesLeadInterestTracker.exe" close=value
+while --left "${row_count}" --operator "Greater_Than_Equal_To" --right "${row_iterator}"
+	// Store data in variables
+	mapTableRow --dataTable ${leads} --row ${row_iterator} --mappings "name=First Name=${first_name},name=Last Name=${last_name},name=Job Title=${job_title},name=Company=${company},name=email=${email},name=phone=${phone},name=Client Address=${client_address},name=Client City=${client_city},name=Client Zipcode=${client_zipcode},name=Area of Interest=${interest},name=Followup Requested=${followup},name=Client State=${client_state}"
+	logMessage --message "First Name: ${first_name}\r\nFollow up: ${followup}" --type "Info"
+	// Set sales leads input fields
+	setValue --value "${email}" --setValueType "Automatic" --algorithm "Default" --matchcondition "Equals" --selector "XPath" --xpath "/root/edit[1]"
+	setValue --value "${interest}" --setValueType "Automatic" --algorithm "Default" --matchcondition "Equals" --selector "XPath" --xpath "/root/edit[2]"
+	click --selector "XPath" --controlsimilarity 100 --xpath "/root/button[1]"
+	delay --timeout "00:00:01.2000000"
+	evaluate --expression "${row_iterator} + 1" row_iterator=value
+endWhile
+closeWindow --window ${close}
+webClick --selector "XPath" --xpath "//*[@id=\"#bs-top-navbar-collapse-1\"]/ul[2]/li/ul/li[2]/a"
+webClose --name web01*23.0.1.0

@@ -1,0 +1,19 @@
+’// CollectionCycledThrough ----------------------------- com distinct
+defVar --name collectionCycledThrough --type Queue --innertype String --value "[a,b,c,a]"
+defVar --name valueCycledThrough --type String
+foreach --collection "${collectionCycledThrough}" --variable "${valueCycledThrough}" --distinct 
+	logMessage --message "${valueCycledThrough}" --type "Info"
+endFor
+//Result:
+//a
+//b
+//c
+// CollectionCycledThrough ----------------------------- sem distinct
+foreach --collection "${collectionCycledThrough}" --variable "${valueCycledThrough}"
+	logMessage --message "${valueCycledThrough}" --type "Info"
+endFor
+//Result:
+//a
+//b
+//c
+//a*23.0.1.0

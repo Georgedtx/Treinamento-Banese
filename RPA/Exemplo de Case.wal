@@ -1,0 +1,25 @@
+°	defVar --name leftOperand --type Numeric --value 3
+defVar --name verifiedCase --type String --value Name
+defVar --name rightOperand --type String --value 5
+case --switches "Any"
+	when --left "${leftOperand}" --operator "Equal_To" --right 3
+	when --left "${leftOperand}" --operator "Less_Than" --right 3
+	when --left "${leftOperand}" --operator "Greater_Than" --right 3
+then
+	logMessage --message "One of the conditions is true" --type "Info"
+endCase
+logMessage --message "End Case" --type "Info"
+// Result: One of the conditions is true.
+// End Case
+case --name "${verifiedCase}" --switches "CaseSwitchesAll"
+	when --left "${leftOperand}" --operator "Equal_To" --right "${rightOperand}"
+then
+	logMessage --message "True verified condition.\r\nLeft => ${leftOperand}\r\nRight => ${rightOperand}" --type "Info"
+otherwise
+	logMessage --message "False verified condition.\r\nLeft => ${leftOperand}\r\nRight => ${rightOperand}" --type "Info"
+	case --switches "CaseSwitchesAll"
+		when --left "${leftOperand}" --operator "Equal_To" --right 5
+	then
+		logMessage --message "False verified condition.\r\nLeft => ${leftOperand}\r\nRight => ${rightOperand}" --type "Info"
+	endCase
+endCase*23.0.1.0

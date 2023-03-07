@@ -1,0 +1,50 @@
+/defVar --name leads --type DataTable
+defVar --name row_count --type Numeric
+defVar --name column_count --type Numeric
+defVar --name row_iterator --type Numeric --value 1
+defVar --name first_name --type String
+defVar --name last_name --type String
+defVar --name email --type String
+defVar --name job_title --type String
+defVar --name company --type String
+defVar --name phone --type String
+defVar --name client_address --type String
+defVar --name client_city --type String
+defVar --name client_state --type String
+defVar --name client_zip --type String
+defVar --name interest --type String
+defVar --name followup --type String
+webStart --name web01 --type "Chrome"
+webNavigate --url "jk-automation.mybluemix.net"
+webSet --value george --selector "CssSelector" --css "body > div:nth-child(4) > form > div:nth-child(1) > input"
+webSet --value password10 --selector "CssSelector" --css "body > div:nth-child(4) > form > div.form-group > input"
+webClick --selector "CssSelector" --css "body > div:nth-child(4) > form > div:nth-child(3) > input"
+webClick --selector "CssSelector" --css "body > div > div.col-md-2.leftNavColumn > div > a:nth-child(2)"
+readCSV --filepath "C:\\Users\\4058631\\Desktop\\BaneseCurso\\Lab 1\\SalesLeads.csv" --delimiter "," --hasheaders  --missingfieldaction "ParseError" leads=value row_count=rows column_count=columns
+delay --timeout "00:00:02"
+while --left "${row_count}" --operator "Greater_Than_Equal_To" --right "${row_iterator}"
+	mapTableRow --dataTable ${leads} --row ${row_iterator} --mappings "[{\"Name\":\"First Name\",\"Number\":null,\"Output\":\"${first_name}\"},{\"Name\":\"Last Name\",\"Number\":null,\"Output\":\"${last_name}\"},{\"Name\":\"Job title\",\"Number\":null,\"Output\":\"${job_title}\"},{\"Name\":\"Company\",\"Number\":null,\"Output\":\"${company}\"},{\"Name\":\"email\",\"Number\":null,\"Output\":\"${email}\"},{\"Name\":\"phone\",\"Number\":null,\"Output\":\"${phone}\"},{\"Name\":\"Client Address\",\"Number\":null,\"Output\":\"${client_address}\"},{\"Name\":\"Client City\",\"Number\":null,\"Output\":\"${client_city}\"},{\"Name\":\"Client State\",\"Number\":null,\"Output\":\"${client_state}\"},{\"Name\":\"Client Zipcode\",\"Number\":null,\"Output\":\"${client_zip}\"},{\"Name\":\"Area of Interest\",\"Number\":null,\"Output\":\"${interest}\"},{\"Name\":\"Followup Requested\",\"Number\":null,\"Output\":\"${followup}\"}]"
+	goSub --label InsertLeadData
+endWhile
+webClick --selector "XPath" --xpath "//*[@id=\"#bs-top-navbar-collapse-1\"]/ul[2]/li/a" --simulatehuman 
+webClick --selector "XPath" --xpath "//*[@id=\"#bs-top-navbar-collapse-1\"]/ul[2]/li/ul/li[2]/a" --simulatehuman 
+webClose --name web01 --leavebrowseropen 
+beginSub --name InsertLeadData
+evaluate --expression "${row_iterator}+1" row_iterator=value
+webClick --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(4) > div:nth-child(3) > div > input" --simulatehuman 
+webSet --value "${first_name}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(1) > div:nth-child(1) > div > input" --simulatehuman 
+webSet --value "${last_name}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(1) > div:nth-child(2) > div > input" --simulatehuman 
+webSet --value "${job_title}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(2) > div:nth-child(1) > div > input" --simulatehuman 
+webSet --value "${company}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(2) > div:nth-child(2) > div > input" --simulatehuman 
+webSet --value "${email}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(1) > div:nth-child(3) > div > input" --simulatehuman 
+webSet --value "${phone}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(2) > div:nth-child(3) > div > input" --simulatehuman 
+webSet --value "${client_address}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(3) > div:nth-child(1) > div > input" --simulatehuman 
+webSet --value "${client_city}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(3) > div:nth-child(2) > div > input" --simulatehuman 
+webSet --value "${client_state}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(3) > div:nth-child(3) > div > input" --simulatehuman 
+webSet --value "${client_zip}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(3) > div:nth-child(4) > div > input" --simulatehuman 
+webSet --value "${interest}" --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(4) > div.col-md-6 > div > input" --simulatehuman 
+if --left "${followup}" --operator "Equal_To" --right Yes
+	webClick --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(4) > div:nth-child(2) > div > input" --simulatehuman 
+endIf
+webClick --selector "CssSelector" --css "body > div > div.col-md-10 > div > div.container-fluid.ng-scope > div:nth-child(1) > div > form > div:nth-child(4) > div:nth-child(3) > div > input" --simulatehuman 
+endSub*23.0.1.0
