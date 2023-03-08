@@ -1,0 +1,38 @@
+�defVar --name connection --type DbConnection
+defVar --name excelPath --type String
+defVar --name excelEmployees --type Excel
+defVar --name counter --type Numeric
+defVar --name employeesID --type Numeric
+defVar --name employeeName --type String
+defVar --name resultSheet --type Numeric --value 1
+defVar --name daysOffTable --type DataTable
+defVar --name dateProcess --type DateTime
+defVar --name salary --type Numeric
+defVar --name anoAdimissao --type Numeric
+defVar --name valorBonus --type Numeric
+defVar --name vinculoEmpresa --type Numeric
+defVar --name valorTotal --type Numeric
+sqlServerConnect --connectionstring "Data Source=UNITBES14\\SQLEXPRESS;Initial Catalog=rpa;User ID=sa;Password=L@b3s01;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False" connection=connection
+getSpecialFolder --folder "Desktop" excelPath=value
+excelOpen --file "C:\\Users\\4058631\\Desktop\\BaneseCurso\\Database\\listaBonus50anos.xlsx" --savechanges  excelEmployees=value
+goSub --label calculationDaysOff
+excelClose --file ${excelEmployees} --save 
+logMessage --message "Término de operação" --type "Info"
+beginSub --name calculationDaysOff
+sqlExecuteReader --connection ${connection} --statement "SELECT [employeesID], [name], [salary], YEAR(CONVERT(date, hiringDate, 101)) as anoAdimissao\r\nFROM [RPA].[dbo].[tbEmployees] WHERE [status] = \'ACTIVE\'" daysOffTable=value
+for --variable ${counter} --from 1 --to ${daysOffTable.Rows} --step 1
+	mapTableRow --dataTable ${daysOffTable} --row ${counter} --mappings "[{\"Name\":\"employeesID\",\"Number\":null,\"Output\":\"${employeesID}\"},{\"Name\":\"name\",\"Number\":null,\"Output\":\"${employeeName}\"},{\"Name\":\"salary\",\"Number\":null,\"Output\":\"${salary}\"},{\"Name\":\"anoAdimissao\",\"Number\":null,\"Output\":\"${anoAdimissao}\"}]"
+	evaluate --expression "${resultSheet} + 1" resultSheet=value
+	evaluate --expression "2023 - ${anoAdimissao}" vinculoEmpresa=value
+	excelSet --value "${vinculoEmpresa}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "d${resultSheet}"
+	evaluate --expression "(${salary} * 5/100) * ${vinculoEmpresa} " valorBonus=value
+	excelSet --value "${employeesID}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "a${resultSheet}"
+	excelSet --value "${employeeName}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "b${resultSheet}"
+	getCurrentDateAndTime --localorutc "LocalTime" dateProcess=value
+	excelSet --value "${salary}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "c${resultSheet}"
+	excelSet --value "${valorBonus}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "e${resultSheet}"
+	evaluate --expression "${valorBonus} + ${salary}" valorTotal=value
+	excelSet --value "${valorTotal}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "f${resultSheet}"
+	excelSet --value "${dateProcess}" --file ${excelEmployees} --getfirstsheet  --usingcell  --cell "g${resultSheet}"
+next
+endSub*23.0.1.0

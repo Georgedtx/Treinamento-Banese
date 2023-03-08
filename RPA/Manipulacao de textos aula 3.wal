@@ -1,0 +1,22 @@
+ÄdefVar --name texto --type String
+defVar --name indiceEncontrado --type Numeric
+defVar --name subTextoObtido --type String
+defVar --name textoEmBase64 --type String
+defVar --name textoConvertido --type String
+defVar --name hashTextoObtido --type String
+defVar --name hashTextoConvertido --type String
+defVar --name filePath --type String
+getSpecialFolder --folder "Desktop" filePath=value
+getTextFromFile --filename "C:\\Users\\4058631\\Downloads\\textoExemplo.txt" texto=text
+parseText --text "${texto}" --query "manipula cookies" --startindex 1 indiceEncontrado=value
+getSubString --text "${texto}" --start ${indiceEncontrado} --length 40 subTextoObtido=value
+logMessage --message "${subTextoObtido}" --type "Info"
+trimString --text "${subTextoObtido}" --trimoption "TrimEnd" subTextoObtido=value
+logMessage --message "${subTextoObtido}" --type "Info"
+textToBase64 --source "${subTextoObtido}" --encoding "UTF8" textoEmBase64=value
+base64ToText --source "${textoEmBase64}" --encoding "UTF8" textoConvertido=value
+hashCalculate --text "${subTextoObtido}" --type "MD5" hashTextoObtido=value
+hashCalculate --text "${textoConvertido}" --type "MD5" hashTextoConvertido=value
+if --left "${hashTextoObtido}" --operator "Equal_To" --right "${hashTextoConvertido}"
+	logMessage --message "Os textos sÃ£o os mesmos\r\n\r\nTexto original:\r\n   ${texto}\r\n\r\n-----------------------\r\nSub-texto: ${subTextoObtido}\r\n\r\n-----------------------\r\nTexto convertido de base 64: ${textoConvertido}\r\n\r\n------------------------\r\nTexto em Base 64: ${textoEmBase64}\r\n" --type "Info"
+endIf*23.0.1.0
