@@ -1,0 +1,35 @@
+¸defVar --name emailPassword --type String --value 81518791mpk
+defVar --name emailServerConnectionInstance --type EmailConnection
+defVar --name subjectInclusiveWords --type List --innertype String
+defVar --name totalEmails --type Numeric
+defVar --name email --type String --value "george.dantas2240@outlook.com"
+defVar --name browser --type Browser
+defVar --name emailMessage --type EmailMessage
+defVar --name emailMessageBody --type String
+defVar --name emailMessageFrom --type String
+defVar --name myDocumentsFolderPath --type String
+defVar --name randomText --type String
+defVar --name csvFilePath --type String
+defVar --name leadsFromEmail --type DataTable
+defVar --name emailToReply --type String
+imapConnect --mailhost "outlook.office365.com" --mailport 993 --usessl  --UseConnectionToSend  --smtpcredentials  --smtphost "smtp-mail.outlook.com" --smtpport 587 --smtpusername "${email}" --smtppassword "${emailPassword}" --smtpusessl  --authenticationtype "BasicAuthentication" --mailusername "${email}" --username "${email}" --mailpassword "${emailPassword}" emailServerConnectionInstance=value
+add --collection "${subjectInclusiveWords}" --value "[SALES LEAD DATA]"
+emailApplySearchFilters --subjectdirective "All" --inclusivesubject ${subjectInclusiveWords} --wordsdirective "All" --connection ${emailServerConnectionInstance}
+emailCount --connection ${emailServerConnectionInstance} totalEmails=value
+if --left "${totalEmails}" --operator "Greater_Than" --right 0
+	goSub --label ProcessEmailMessages
+endIf
+beginSub --name ProcessEmailMessages
+getSpecialFolder --folder "MyDocuments" myDocumentsFolderPath=value
+foreach --collection "${emailServerConnectionInstance}" --variable "${emailMessage}"
+	emailRead --message ${emailMessage} emailMessageBody=body emailMessageFrom=from
+	createRandomText --useuppercaseletters  --uselowercaseletters  --minimumlength 1 --maximumlength 5 randomText=value
+	replaceText --texttoparse "${emailMessageBody}" --useregex  --pattern "[\\r\\n]" --regexOptions "0" emailMessageBody=value
+	writeToFile --value "First Name,Last Name,Job Title,Company,email,phone,Client Address,Client City,Client Zipcode,Area of Interest,Followup Requested${emailMessageBody}" --file "${myDocumentsFolderPath}\\${randomText}.csv" --encoding "Default" csvFilePath=value
+	readCSV --filepath "${csvFilePath}" --delimiter "," --hasheaders  --missingfieldaction "ParseError" leadsFromEmail=value
+	fileDelete --file "${csvFilePath}"
+	executeScript --name "C:\\Users\\4058631\\Documents\\GitHub\\Treinamento-Banese\\RPA\\sales-lead-automation.wal" --parameters "{\"lead\":\"${leadsFromEmail}\",\"browserWindow\":\"${browser}\"}" --output "{}"
+	getRegex --text "${emailMessageFrom}" --regexPattern "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}\\b" --regexOptions "0" emailToReply=value
+	emailReply --message ${emailMessage} --from "${emailToReply}" --subject "[SALES LEAD DATA] Processed" --bodytype "Text" --body "Seu e-mail foi processado!"
+endFor
+endSub*23.0.1.0
